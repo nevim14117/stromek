@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Domov</title>
+    <meta name="description" content="Jednoduchá HTML5 šablona pro route '/'">
+    <link rel="icon" href="/static/images/favicon.ico">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+      html,body{height:100%;margin:0;font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f7fafc;color:#222}
+      .wrap{max-width:900px;margin:32px auto;padding:20px}
+      header{display:flex;align-items:center;justify-content:space-between}
+      header .brand{display:flex;align-items:center;gap:12px}
+      .hero{background:#fff;padding:20px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+      h1{margin:0 0 10px;font-size:1.5rem}
+      p{margin:0 0 12px;color:#4a5568}
+      footer{margin-top:20px;color:#718096;font-size:.9rem;text-align:center}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <img src="/static/images/logo.svg" alt="Logo" style="height:40px;" onerror="this.style.display='none'">
+          <div>
+            <strong>Moje aplikace</strong>
+            <div style="font-size:.85rem;color:#718096">Jednoduchá ukázková stránka</div>
+          </div>
+        </div>
+        <nav>
+          <a href="/">Domů</a>
+        </nav>
+      </header>
+
+      <main class="hero">
+        <h1>Vítejte</h1>
+        <!-- Kontejner stromku s překryvy -->
+        <div class="tree-wrap" style="position:relative;max-width:420px;margin:12px 0;border-radius:8px;overflow:hidden;">
+          <!-- Hlavní obrazek stromku -->
+          <img id="tree-image" src="/static/images/tree.jpg" alt="Stromek" style="width:100%;display:block;" onerror="this.style.display='none'">
+          <!-- Překryvné vrstvy (skryté, zobrazí se podle checkboxu) -->
+          <img class="overlay" data-key="candles" src="/static/images/candles.png" alt="Svíčky" style="position:absolute;top:0;left:0;width:100%;height:auto;display:none;pointer-events:none;" onerror="this.style.display='none'">
+          <img class="overlay" data-key="chain" src="/static/images/chain.png" alt="Řetěz" style="position:absolute;top:0;left:0;width:100%;height:auto;display:none;pointer-events:none;" onerror="this.style.display='none'">
+          <img class="overlay" data-key="balls" src="/static/images/balls.png" alt="Koule" style="position:absolute;top:0;left:0;width:100%;height:auto;display:none;pointer-events:none;" onerror="this.style.display='none'">
+        </div>
+        <p>Toto je jednoduchá, přehledná HTML stránka pro cestu <code>/</code>. Měla by se zobrazit i pokud vaše aplikace momentálně nepoužívá šablonovací proměnné.</p>
+        <p>Pokud používáte Flask, použijte v `main.py`:</p>
+        <pre style="background:#f1f5f9;padding:10px;border-radius:6px;">from flask import Flask, render_template
+app = Flask(__name__)
+@app.route('/')
+def home():
+    return render_template('index.html')
+        </pre>
+        
+        <!-- Formulář s checkboxy pro "colby" (hodnoty mapují na soubory overlay) -->
+        <form method="get" action="/" style="margin-top:16px;">
+          <fieldset style="border:1px solid #e2e8f0;padding:12px;border-radius:6px">
+            <legend style="font-weight:bold">Vyberte ozdoby (colby)</legend>
+            <label style="display:block;margin:6px 0"><input type="checkbox" name="colby" value="candles"> svíčky</label>
+            <label style="display:block;margin:6px 0"><input type="checkbox" name="colby" value="chain"> řetěz</label>
+            <label style="display:block;margin:6px 0"><input type="checkbox" name="colby" value="balls"> koule</label>
+            <button type="submit" style="margin-top:8px;padding:8px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;cursor:pointer">Odeslat (GET)</button>
+          </fieldset>
+        </form>
+
+        <!-- Zobrazení vybraných hodnot (přichází v query string jako colby=...) -->
+        {% set selected = request.args.getlist('colby') %}
+        {% if selected %}
+          <div style="margin-top:14px;padding:12px;background:#ffffff;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,0.04)">
+            <strong>Vybráno:</strong>
+            <ul style="margin:8px 0 0 18px;color:#2d3748">
+              {% for item in selected %}
+                <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+        
+        <script>
+          // Script: propojí checkboxy s překryvnými obrázky nad stromkem
+          document.addEventListener('DOMContentLoaded', function () {
+            const overlays = {};
+            document.querySelectorAll('.overlay').forEach(img => {
+              overlays[img.dataset.key] = img;
+            });
+
+            // Funkce pro aktualizaci viditelnosti podle checked
+            function updateOverlays() {
+              document.querySelectorAll('input[name="colby"]').forEach(cb => {
+                const key = cb.value;
+                const img = overlays[key];
+                if (!img) return;
+                img.style.display = cb.checked ? 'block' : 'none';
+              });
+            }
+
+            // Inicializovat podle query string (pokud tam jsou hodnoty)
+            const params = new URLSearchParams(window.location.search);
+            const selected = params.getAll('colby');
+            if (selected.length) {
+              document.querySelectorAll('input[name="colby"]').forEach(cb => {
+                cb.checked = selected.includes(cb.value);
+              });
+            }
+
+            // Naslouchat změnám
+            document.querySelectorAll('input[name="colby"]').forEach(cb => cb.addEventListener('change', updateOverlays));
+
+            // Po načtení nastav viditelnost
+            updateOverlays();
+          });
+        </script>
+      </main>
+
+      <footer>
+        &copy; 2026 — Všechna práva vyhrazena.
+      </footer>
+    </div>
+  </body>
+</html>
