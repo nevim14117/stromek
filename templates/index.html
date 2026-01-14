@@ -35,37 +35,28 @@
 
       <main class="hero">
         <h1>Vítejte</h1>
-        <!-- Kontejner stromku s překryvy -->
+        <!-- Kontejner stromku s dynamicky generovanými překryvy -->
         <div class="tree-wrap" style="position:relative;max-width:420px;margin:12px 0;border-radius:8px;overflow:hidden;">
           <!-- Hlavní obrazek stromku -->
           <img id="tree-image" src="/static/images/tree.jpg" alt="Stromek" style="width:100%;display:block;" onerror="this.style.display='none'">
-          <!-- Překryvné vrstvy (skryté, zobrazí se podle checkboxu) -->
-          <img class="overlay" data-key="candles" src="/static/images/candles.png" alt="Svíčky" style="position:absolute;top:0;left:0;width:100%;height:auto;display:none;pointer-events:none;" onerror="this.style.display='none'">
-          <img class="overlay" data-key="chain" src="/static/images/chain.png" alt="Řetěz" style="position:absolute;top:0;left:0;width:100%;height:auto;display:none;pointer-events:none;" onerror="this.style.display='none'">
-          <img class="overlay" data-key="balls" src="/static/images/balls.png" alt="Koule" style="position:absolute;top:0;left:0;width:100%;height:auto;display:none;pointer-events:none;" onerror="this.style.display='none'">
+          <!-- Překryvné vrstvy generované z Pythonu -->
+          {% for overlay in overlays %}
+          <img class="overlay" data-key="{{ overlay.key }}" src="/static/images/{{ overlay.key }}.png" alt="{{ overlay.label }}" style="position:absolute;top:0;left:0;width:100%;height:auto;pointer-events:none;" onerror="this.style.display='none'">
+          {% endfor %}
         </div>
-        <p>Toto je jednoduchá, přehledná HTML stránka pro cestu <code>/</code>. Měla by se zobrazit i pokud vaše aplikace momentálně nepoužívá šablonovací proměnné.</p>
-        <p>Pokud používáte Flask, použijte v `main.py`:</p>
-        <pre style="background:#f1f5f9;padding:10px;border-radius:6px;">from flask import Flask, render_template
-app = Flask(__name__)
-@app.route('/')
-def home():
-    return render_template('index.html')
-        </pre>
         
-        <!-- Formulář s checkboxy pro "colby" (hodnoty mapují na soubory overlay) -->
+        <!-- Formulář s checkboxy pro "volby" (hodnoty mapují na soubory overlay) -->
         <form method="get" action="/" style="margin-top:16px;">
           <fieldset style="border:1px solid #e2e8f0;padding:12px;border-radius:6px">
-            <legend style="font-weight:bold">Vyberte ozdoby (colby)</legend>
-            <label style="display:block;margin:6px 0"><input type="checkbox" name="colby" value="candles"> svíčky</label>
-            <label style="display:block;margin:6px 0"><input type="checkbox" name="colby" value="chain"> řetěz</label>
-            <label style="display:block;margin:6px 0"><input type="checkbox" name="colby" value="balls"> koule</label>
+            <legend style="font-weight:bold">Vyberte ozdoby (volby)</legend>
+            <label style="display:block;margin:6px 0"><input type="checkbox" name="volby" value="candles"> svíčky</label>
+            <label style="display:block;margin:6px 0"><input type="checkbox" name="volby" value="chain"> řetěz</label>
+            <label style="display:block;margin:6px 0"><input type="checkbox" name="volby" value="balls"> koule</label>
             <button type="submit" style="margin-top:8px;padding:8px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;cursor:pointer">Odeslat (GET)</button>
           </fieldset>
         </form>
 
-        <!-- Zobrazení vybraných hodnot (přichází v query string jako colby=...) -->
-        {% set selected = request.args.getlist('colby') %}
+        <!-- Zobrazení vybraných hodnot -->
         {% if selected %}
           <div style="margin-top:14px;padding:12px;background:#ffffff;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,0.04)">
             <strong>Vybráno:</strong>
@@ -78,37 +69,15 @@ def home():
         {% endif %}
         
         <script>
-          // Script: propojí checkboxy s překryvnými obrázky nad stromkem
+          // Script: aktualizuje checkboxy podle query string
           document.addEventListener('DOMContentLoaded', function () {
-            const overlays = {};
-            document.querySelectorAll('.overlay').forEach(img => {
-              overlays[img.dataset.key] = img;
-            });
-
-            // Funkce pro aktualizaci viditelnosti podle checked
-            function updateOverlays() {
-              document.querySelectorAll('input[name="colby"]').forEach(cb => {
-                const key = cb.value;
-                const img = overlays[key];
-                if (!img) return;
-                img.style.display = cb.checked ? 'block' : 'none';
-              });
-            }
-
-            // Inicializovat podle query string (pokud tam jsou hodnoty)
             const params = new URLSearchParams(window.location.search);
-            const selected = params.getAll('colby');
+            const selected = params.getAll('volby');
             if (selected.length) {
-              document.querySelectorAll('input[name="colby"]').forEach(cb => {
+              document.querySelectorAll('input[name="volby"]').forEach(cb => {
                 cb.checked = selected.includes(cb.value);
               });
             }
-
-            // Naslouchat změnám
-            document.querySelectorAll('input[name="colby"]').forEach(cb => cb.addEventListener('change', updateOverlays));
-
-            // Po načtení nastav viditelnost
-            updateOverlays();
           });
         </script>
       </main>

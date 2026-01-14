@@ -1,6 +1,13 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+
+# Mapování voleb na soubory overlay
+OVERLAY_MAP = {
+    'candles': 'Svíčky',
+    'chain': 'Řetěz',
+    'balls': 'Koule'
+}
 
 
 @app.route('/')
@@ -13,7 +20,19 @@ def home():
     Or with the Flask CLI:
         $env:FLASK_APP = 'main.py'; flask run
     """
-    return render_template('index.html')
+    # Načíst vybrané volby z query stringu
+    selected = request.args.getlist('volby')
+    
+    # Filtrovat pouze existující volby
+    selected = [v for v in selected if v in OVERLAY_MAP]
+    
+    # Připravit data pro šablonu
+    overlays = [
+        {'key': key, 'label': OVERLAY_MAP[key]}
+        for key in selected
+    ]
+    
+    return render_template('index.html', selected=selected, overlays=overlays)
 
 
 if __name__ == '__main__':
